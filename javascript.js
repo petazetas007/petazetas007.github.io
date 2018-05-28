@@ -18,7 +18,7 @@ function pelota(){
 	this.xvel=3;
 	this.yvel=-3;
 	this.color="green"
-} 
+} /**/
 function palet(){
 	this.vel=10;
 	this.h=10;
