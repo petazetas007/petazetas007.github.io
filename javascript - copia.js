@@ -3,8 +3,6 @@ var ctx = canvas.getContext("2d");
 
 var xmax = canvas.width; //1366px
 var ymax = canvas.height; //768px
-var inicio=true;
-var pausa=false;
 
 function datos(){
 	this.vidas=5;
@@ -13,10 +11,10 @@ function datos(){
 }
 function pelota(){
 	this.x=xmax/2;
-	this.y=5*ymax/6;
-	this.r=10;
-	this.xvel=3;
-	this.yvel=-3;
+	this.y=ymax/2;
+	this.r=25;
+	this.xvel=5;
+	this.yvel=5;
 	this.color="green"
 }
 function palet(){
@@ -69,10 +67,11 @@ return bricks;
 
 var bola= new pelota();
 var paleta= new palet();
-var muro=new ladrillos(20,20);
-animacion();
-inicio=false;
-
+var muro=new ladrillos(5,5);
+bola.x=400;
+bola.y=400;
+bola.yvel=-5
+bola.xvel=-5
 //alert("x=:"+muro.matriz[1][0].x+ ", y:"+ muro.matriz[1][0].y);
 function mover_bola(){
 	bola.x+=bola.xvel;
@@ -121,24 +120,19 @@ function colisiones(){
 					muro.matriz[i][j].valor=false;
 					bola.yvel=-bola.yvel;
 				}*/
-				if(bola.x-bola.r<=x+muro.b && bola.x+bola.r>=x && y<=bola.y && y+muro.h>=bola.y){
+				if(bola.x-bola.r<=x+bola.b && y<=bola.y && y+muro.h>=bola.y){
 					muro.matriz[i][j].valor=false;
 					bola.xvel=-bola.xvel;
-					//alert(i + "   " + j + "   choque en X");
 					i=muro.nx;
 					j=muro.ny;
-					
 
 				}
-				if(bola.y-bola.r<=y+muro.h && bola.y+bola.r>=y && x<=bola.x && x+muro.b>=bola.x){
+				if(bola.y-bola.r<=y+muro.h && x<=bola.x && x+muro.b>=bola.x){
 					muro.matriz[i][j].valor=false;
 					bola.yvel=-bola.yvel;
-					//alert(i + "   " + j + "   choque en Y");
 					i=muro.nx;
 					j=muro.ny;
-					
 				}
-
 			}
 		}
 	}
@@ -180,12 +174,10 @@ function dibuja(){
     ctx.fillText(bola.y, 8, 50);
 }
 function animacion(){
-	if(inicio &&  !pausa){
 	mover_bola();
 	mover_paleta();
 	colisiones();
 	dibuja();
-	}
 	//alert(paleta.dcha + "   " +paleta.izqda+ "   " +paleta.x);
 }
 
@@ -197,11 +189,9 @@ function pulsar(e) {
     }
     else if(e.keyCode == 37) {
     	paleta.izqda=true;
+    	//alert(paleta.dcha + "   " +paleta.izqda);
     	
-    }    
- 	else if(e.keyCode == 80) {
-    	pausa=!pausa;
-    }   
+    }
    
 }
 
@@ -214,16 +204,11 @@ function soltar(e) {
     else if(e.keyCode == 37) {
         paleta.izqda=false;
         paleta.dcha=false;
-  }
-	else if(e.keyCode == 32) {
-    	inicio=true;
-    	//alert(paleta.dcha + "   " +paleta.izqda);
-    	
-    }
 
-  
+
+    }
   //alert(paleta.dcha + "   " +paleta.izqda);
 }
 document.addEventListener("keydown", pulsar);
 document.addEventListener("keyup", soltar);
-setInterval(animacion,5);		
+setInterval(animacion,20);	
