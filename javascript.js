@@ -22,7 +22,7 @@ function pelota(){
 function palet(){
 	this.vel=15;
 	this.h=10;
-	this.b=xmax/1;
+	this.b=xmax/6;
 	this.y=ymax-this.h-3;
 	this.x=(xmax-this.b)/2;
 	this.dcha=false;
