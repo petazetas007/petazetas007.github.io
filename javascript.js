@@ -18,9 +18,9 @@ function pelota(){
 	this.xvel=3;
 	this.yvel=-3;
 	this.color="green"
-} /**/
+} 
 function palet(){
-	this.vel=15;
+	this.vel=10;
 	this.h=10;
 	this.b=xmax/6;
 	this.y=ymax-this.h-3;
@@ -69,7 +69,7 @@ return bricks;
 
 var bola= new pelota();
 var paleta= new palet();
-var muro=new ladrillos(20,20);
+var muro=new ladrillos(10,8);
 animacion();
 inicio=false;
 
