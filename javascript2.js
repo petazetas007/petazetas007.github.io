@@ -3,23 +3,30 @@ var ctx = canvas.getContext("2d");
 
 var xmax = canvas.width; //1366px
 var ymax = canvas.height; //768px
+var inicio=true;
+var pausa=false;
 
-
-function datos_init(){
-	this.vidas=4;
+function datos(){
+	this.vidas=5;
 	this.score=0;
 	this.nivel=1;
 }
-function pelota(vel){
-	this.vel=vel;
+function pelota(){
 	this.x=xmax/2;
 	this.y=5*ymax/6;
 	this.r=10;
-	this.xvel=Math.sqrt(Math.pow(this.vel,2)/2);
-	this.yvel=-Math.sqrt(Math.pow(this.vel,2)/2);
+	this.xvel=3;
+	this.yvel=-3;
 	this.color="green"
 
-
+	function origen(){
+		this.x=xmax/2;
+		this.y=5*ymax/6;
+		this.r=10;
+		this.xvel=3;
+		this.yvel=-3;
+		this.color="green"
+	}
 } /**/
 function palet(){
 	this.vel=10;
@@ -30,8 +37,7 @@ function palet(){
 	this.dcha=false;
 	this.izqda=false;
 	this.arma=false;
-
-
+	this.vidas=4;
 }
  function ladrillos(x,y){
  	this.nx=x;
@@ -70,50 +76,13 @@ function crea_matriz(nx,ny,b,h,margenx,margeny,margen_lados,margen_up){
 return bricks;
 }
 //EMPIEZA EL PROGRAMA
-	
 
-	start();
-   
-function dibuja_vidas(){
-	var y_separ=30;
-	var x_offs=8;
-	var y_offs=20;
-	for(i=0;i<datos.vidas;i++){
-		ctx.beginPath();
-	    ctx.moveTo(x_offs+12, y_separ*i+y_offs);
-	    ctx.lineTo(x_offs+28, y_separ*i+y_offs);
-	    ctx.lineTo(x_offs+20, y_separ*i+12+y_offs);
-	    ctx.fillStyle = "red";
-	    ctx.fill();
-		ctx.beginPath();	
-		ctx.arc(x_offs+16, y_separ*i-1+y_offs, 4, 0, Math.PI*2);
-		ctx.fillStyle = "red";
-		ctx.fill();
-		ctx.closePath();
-		ctx.arc(x_offs+24, y_separ*i-1+y_offs, 4, 0, Math.PI*2);
-		ctx.fillStyle = "red";
-		ctx.fill();
-		ctx.closePath();
-}	}
+var bola= new pelota();
+var paleta= new palet();
+var muro=new ladrillos(10,8);
+animacion();
+inicio=false;
 
-	function start(){
-	 anim_ms=25;
-	 inicio=true;
-	 pausa=false;
-	 datos= new datos_init();
-	 bola= new pelota(8);
-	 paleta= new palet();
-	 muro=new ladrillos(10,8);
-	 animacion();
-	 inicio=false;
-
-}
-
-function cambio_direccion(){
-	var angulo=(bola.x- paleta.x)/paleta.b; //valor entre 1 y 0
-	bola.yvel=-bola.yvel;
-	//bola.xvel=bola.vel*Math.sin
-}
 //alert("x=:"+muro.matriz[1][0].x+ ", y:"+ muro.matriz[1][0].y);
 function mover_bola(){
 	bola.x+=bola.xvel;
@@ -133,28 +102,12 @@ function mover_bola(){
 	if(bola.y+bola.r>=ymax){
 		if(bola.x>=paleta.x && bola.x<= paleta.x+paleta.b){
 		bola.y=ymax-bola.r;
-		//bola.yvel=-bola.yvel;
-		cambio_direccion();
+		bola.yvel=-bola.yvel;
 		}
 		else{
 
-				if(datos.vidas>0){
-					inicio=false;
-					datos.vidas-=1;
-					//pelota.pos_inicio();
-					bola= new pelota();
-				}
-				else{
-						datos.vidas-=1;
-						inicio=false;
-					    ctx.font = "16px Arial";
-					    ctx.fillStyle = "#0095DD";
-					    ctx.fillText("FIN DEL JUEGO", xmax/2, 5*ymax/6);
-					    ClearInterval(t);
-				}
 
-
-    			//document.location.reload();
+    			
 		}
 	}
 }
@@ -185,8 +138,7 @@ function colisiones(){
 					//alert(i + "   " + j + "   choque en X");
 					i=muro.nx;
 					j=muro.ny;
-					datos.score+=1;
-
+					
 
 				}
 				if(bola.y-bola.r<=y+muro.h && bola.y+bola.r>=y && x<=bola.x && x+muro.b>=bola.x){
@@ -195,8 +147,7 @@ function colisiones(){
 					//alert(i + "   " + j + "   choque en Y");
 					i=muro.nx;
 					j=muro.ny;
-					datos.score+=1;
-
+					
 				}
 
 			}
@@ -233,16 +184,11 @@ function dibuja(){
         }
         }
     }
-    /*VIDAS*/
-    //ctx.drawImage(img, 5, 5,20,20);
-    dibuja_vidas();
-    //ctx.drawImage(img, 5, 35,20,20);
     /*TEXTO*/
-    //SCORE
-    ctx.font = "20px Arial";
+    ctx.font = "16px Arial";
     ctx.fillStyle = "#0095DD";
-    ctx.fillText(datos.score, 1320, 30);
-    //ctx.fillText(pausa, 8, 50);
+    ctx.fillText("vidas="+vidas, 8, 25);
+    ctx.fillText(bola.y, 8, 50);
 }
 function animacion(){
 	if(inicio &&  !pausa){
@@ -264,13 +210,8 @@ function pulsar(e) {
     	paleta.izqda=true;
     	
     }    
- 	else if(e.keyCode == 80 && inicio==true) {
+ 	else if(e.keyCode == 80) {
     	pausa=!pausa;
-    	if(pausa){
-    		ctx.font = "16px Arial";
-    		ctx.fillStyle = "#0095DD";
-    		ctx.fillText("JUEGO PAUSADO", xmax/2, 5*ymax/6);
-    	}
     }   
    
 }
@@ -286,11 +227,7 @@ function soltar(e) {
         paleta.dcha=false;
   }
 	else if(e.keyCode == 32) {
-
-    	if(datos.vidas>=0){inicio=true;}
-    	else{
-    		start();
-    	}
+    	inicio=true;
     	//alert(paleta.dcha + "   " +paleta.izqda);
     	
     }
@@ -300,4 +237,4 @@ function soltar(e) {
 }
 document.addEventListener("keydown", pulsar);
 document.addEventListener("keyup", soltar);
-var t=setInterval(animacion,anim_ms);		
+setInterval(animacion,5);		
