@@ -3,26 +3,32 @@ var ctx = canvas.getContext("2d");
 
 var xmax = canvas.width; //1366px
 var ymax = canvas.height; //768px
-
+xmax=1366;
+ymax=768;
 
 function datos_init(){
 	this.vidas=4;
 	this.score=0;
 	this.nivel=1;
+	this.nx=5;
+	this.ny=3;
+	this.vel_paleta=15;
+	this.vel_bola=13;
 }
 function pelota(vel){
 	this.vel=vel;
+	this.angulo=45;
 	this.x=xmax/2;
 	this.y=5*ymax/6;
 	this.r=10;
-	this.xvel=Math.sqrt(Math.pow(this.vel,2)/2);
-	this.yvel=-Math.sqrt(Math.pow(this.vel,2)/2);
+	this.xvel=this.vel*Math.cos(this.angulo*Math.PI/180);
+	this.yvel=-this.vel*Math.sin(this.angulo*Math.PI/180);
 	this.color="green"
 
 
 } /**/
-function palet(){
-	this.vel=10;
+function palet(vel){
+	this.vel=vel;
 	this.h=10;
 	this.b=xmax/6;
 	this.y=ymax-this.h-3;
@@ -36,7 +42,7 @@ function palet(){
  function ladrillos(x,y){
  	this.nx=x;
 	this.ny=y;
-	
+	this.restantes=x*y;
 	this.margenx = 2;
 	this.margeny = 2;
 	this.margen_up = 10;
@@ -69,11 +75,32 @@ function crea_matriz(nx,ny,b,h,margenx,margeny,margen_lados,margen_up){
 	}
 return bricks;
 }
-//EMPIEZA EL PROGRAMA
-	
 
+
+//EMPIEZA EL PROGRAMA
+	function sube_nivel(){
+		datos.nivel+=1;
+		if (datos.nivel>2 && datos.nivel<=5){ datos.vidas+=1;}
+		if (datos.nivel>5){ datos.vidas+=2;}
+		if (datos.nivel<=8){ bola.vel+=1; paleta.vel+=1;} 
+		if (datos.nivel<8){ datos.ny+=1;} 
+		datos.nx+=1;
+
+	}
+	function fin_nivel(){
+		if(muro.restantes==0){
+			sube_nivel();
+			start();
+		}
+	}
+    var angulo=0;
+    datos= new datos_init();
+    alert("Bienvenid@. Para iniciar el movimiento de la bola, pulse la barra espaciadora. Puedes pausar/despausar el juego pulsando 'P'");	
 	start();
-   
+
+
+
+
 function dibuja_vidas(){
 	var y_separ=30;
 	var x_offs=8;
@@ -97,22 +124,41 @@ function dibuja_vidas(){
 }	}
 
 	function start(){
-	 anim_ms=25;
+	 anim_ms=50;
 	 inicio=true;
 	 pausa=false;
-	 datos= new datos_init();
-	 bola= new pelota(8);
-	 paleta= new palet();
-	 muro=new ladrillos(10,8);
+	 if (datos.nivel==1){
+		 
+		 bola= new pelota(datos.vel_bola);
+		 paleta= new palet(datos.vel_paleta);
+		 muro=new ladrillos(datos.nx ,datos.ny);
+	 }
+	 else{
+	 	 bola= new pelota(bola.vel);
+		 paleta= new palet(paleta.vel);
+		 muro=new ladrillos(datos.nx ,datos.ny);
+	 }
 	 animacion();
 	 inicio=false;
 
 }
 
 function cambio_direccion(){
-	var angulo=(bola.x- paleta.x)/paleta.b; //valor entre 1 y 0
 	bola.yvel=-bola.yvel;
-	//bola.xvel=bola.vel*Math.sin
+	
+
+		//alert(paleta.dcha + "   " + paleta.izqda);
+	if (paleta.dcha==true){
+		
+	angulo=10+70*(bola.x-paleta.x)/paleta.b;	
+	bola.yvel=-bola.vel*Math.cos(angulo*Math.PI/180);
+	bola.xvel= +bola.vel*Math.sin(angulo*Math.PI/180);
+	}
+	if (paleta.izqda==true){
+	angulo=10+70*(-bola.x+paleta.x+paleta.b)/paleta.b;	
+	bola.yvel=-bola.vel*Math.cos(angulo*Math.PI/180);
+	bola.xvel= -bola.vel*Math.sin(angulo*Math.PI/180);
+	}
 }
 //alert("x=:"+muro.matriz[1][0].x+ ", y:"+ muro.matriz[1][0].y);
 function mover_bola(){
@@ -142,7 +188,7 @@ function mover_bola(){
 					inicio=false;
 					datos.vidas-=1;
 					//pelota.pos_inicio();
-					bola= new pelota();
+					bola= new pelota(bola.vel);
 				}
 				else{
 						datos.vidas-=1;
@@ -186,6 +232,7 @@ function colisiones(){
 					i=muro.nx;
 					j=muro.ny;
 					datos.score+=1;
+					muro.restantes-=1;
 
 
 				}
@@ -196,6 +243,7 @@ function colisiones(){
 					i=muro.nx;
 					j=muro.ny;
 					datos.score+=1;
+					muro.restantes-=1;
 
 				}
 
@@ -242,7 +290,9 @@ function dibuja(){
     ctx.font = "20px Arial";
     ctx.fillStyle = "#0095DD";
     ctx.fillText(datos.score, 1320, 30);
-    //ctx.fillText(pausa, 8, 50);
+
+    ctx.fillText("NIVEL " + datos.nivel, 700, 500);
+    //ctx.fillText("a", 700, 560);
 }
 function animacion(){
 	if(inicio &&  !pausa){
@@ -250,6 +300,7 @@ function animacion(){
 	mover_paleta();
 	colisiones();
 	dibuja();
+	fin_nivel();
 	}
 	//alert(paleta.dcha + "   " +paleta.izqda+ "   " +paleta.x);
 }
@@ -274,7 +325,6 @@ function pulsar(e) {
     }   
    
 }
-
 function soltar(e) {
     if(e.keyCode == 39) {
         paleta.dcha=false;
@@ -286,10 +336,12 @@ function soltar(e) {
         paleta.dcha=false;
   }
 	else if(e.keyCode == 32) {
-
+		
     	if(datos.vidas>=0){inicio=true;}
     	else{
+
     		start();
+
     	}
     	//alert(paleta.dcha + "   " +paleta.izqda);
     	
