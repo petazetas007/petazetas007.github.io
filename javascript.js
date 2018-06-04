@@ -10,8 +10,8 @@ function datos_init(){
 	this.vidas=4;
 	this.score=0;
 	this.nivel=1;
-	this.nx=5;
-	this.ny=3;
+	this.nx=6;//5
+	this.ny=5;//3
 	this.vel_paleta=15;
 	this.vel_bola=13;
 }
@@ -52,8 +52,21 @@ function palet(vel){
 	this.matriz=crea_matriz(this.nx,this.ny,this.b,this.h,this.margenx,this.margeny,this.margen_lados,this.margen_up);
  }
 
+function tipo_ladrillo(){
+	var tipos=["bola_grande","bola_pequeña","rapido", "lento","paleta_grande","paleta_pequeña", "atraviesa", "vida"];
+	var porcentajes=[4,		  4,			 4,		   4,	   4,			    4,				 4,			  4];
+	var porc=Math.random()*100;
+	var porc_acum=0;
+	for(t=0;t<tipos.length;t++){
+		porc_acum+=porcentajes[t];
+		if(porc<=porc_acum){ return tipos[t];}
+	}
+	return "normal"
+}
 function crea_matriz(nx,ny,b,h,margenx,margeny,margen_lados,margen_up){
 	var bricks = [];
+	tipo_ladrillo();
+	 
 	for(i=0; i<nx; i++) {
     bricks[i] = [];
     for(j=0; j<ny; j++) {
@@ -67,10 +80,13 @@ function crea_matriz(nx,ny,b,h,margenx,margeny,margen_lados,margen_up){
     	if ((j+i)%5==2){colo="#6278E4";}
     	if ((j+i)%5==3){colo="#57EC69";}
 		if ((j+i)%5==4){colo="#995478";}
+
+
     	var xval=(b+margenx)*i+margen_lados+x_extra;
     	var yval=(h+margeny)*j+margen_up;
     	
-        bricks[i][j] = { x: xval, y: yval, valor:true,col:colo};
+        bricks[i][j] = { x: xval, y: yval, valor:true,col:colo,tipo: 
+        			   tipo_ladrillo(),x_bonus: xval+b/2, y_bonus: yval+h/2, tipo_caida:false};
     	}
 	}
 return bricks;
@@ -124,7 +140,7 @@ function dibuja_vidas(){
 }	}
 
 	function start(){
-	 anim_ms=50;
+	 anim_ms=25;
 	 inicio=true;
 	 pausa=false;
 	 if (datos.nivel==1){
@@ -224,9 +240,10 @@ function colisiones(){
 				/*if(bola.y+bola.r>=y&& x<=bola.x && x+muro.b>=bola.x){
 					muro.matriz[i][j].valor=false;
 					bola.yvel=-bola.yvel;
-				}*/
+				}*/	
 				if(bola.x-bola.r<=x+muro.b && bola.x+bola.r>=x && y<=bola.y && y+muro.h>=bola.y){
 					muro.matriz[i][j].valor=false;
+					if(muro.matriz[i][j].tipo!="normal"){muro.matriz[i][j].tipo_caida=true;}
 					bola.xvel=-bola.xvel;
 					//alert(i + "   " + j + "   choque en X");
 					i=muro.nx;
@@ -238,6 +255,7 @@ function colisiones(){
 				}
 				if(bola.y-bola.r<=y+muro.h && bola.y+bola.r>=y && x<=bola.x && x+muro.b>=bola.x){
 					muro.matriz[i][j].valor=false;
+					if(muro.matriz[i][j].tipo!="normal"){muro.matriz[i][j].tipo_caida=true;}
 					bola.yvel=-bola.yvel;
 					//alert(i + "   " + j + "   choque en Y");
 					i=muro.nx;
@@ -247,6 +265,20 @@ function colisiones(){
 
 				}
 
+			}
+			//movimiento y colisiones de los bonus
+			if(muro.matriz[i][j].tipo_caida==true){
+				muro.matriz[i][j].y_bonus+=bola.vel/3;
+				//COGER EL BONUS
+				if (ymax-muro.matriz[i][j].y_bonus-paleta.h<0) { 
+					muro.matriz[i][j].tipo_caida=false; 
+					if(muro.matriz[i][j].x_bonus>=paleta.x && muro.matriz[i][j].x_bonus<= paleta.x+paleta.b){
+						alert(muro.matriz[i][j].tipo); 
+
+					}
+
+				}
+			
 			}
 		}
 	}
@@ -279,6 +311,17 @@ function dibuja(){
             ctx.fill();
             ctx.closePath();
         }
+
+     //DROPS DE BONUS
+      		
+            if(muro.matriz[i][j].tipo_caida==true){
+            //alert(muro.matriz[i][j].tipo+ "  " + muro.matriz[i][j].xval + "  " + muro.matriz[i][j].yval);
+            ctx.beginPath();
+            ctx.arc(muro.matriz[i][j].x_bonus,muro.matriz[i][j].y_bonus,5, 0, Math.PI*2);
+			ctx.fillStyle = "red";
+			ctx.fill();
+            ctx.closePath();
+        		}
         }
     }
     /*VIDAS*/
@@ -290,7 +333,6 @@ function dibuja(){
     ctx.font = "20px Arial";
     ctx.fillStyle = "#0095DD";
     ctx.fillText(datos.score, 1320, 30);
-
     ctx.fillText("NIVEL " + datos.nivel, 700, 500);
     //ctx.fillText("a", 700, 560);
 }
