@@ -606,7 +606,7 @@ function animacion(){
 	}
 	//alert(paleta.dcha + "   " +paleta.izqda+ "   " +paleta.x);
 }
-
+ 
 function pulsar(e) {
     if(e.keyCode == 39) {
     	paleta.dcha=true;
